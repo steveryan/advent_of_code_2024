@@ -63,9 +63,5 @@ def valid_report?(report:, dampener_used:)
 end
 
 
-# p "Part 1: #{part_1(reports)}"
-start = Time.now
+p "Part 1: #{part_1(reports)}"
 p "Part 2: #{part_2(reports)}"
-ending = Time.now
-
-p "Time elapsed #{ending - start} seconds"
