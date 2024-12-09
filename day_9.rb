@@ -55,14 +55,13 @@ def part_1
 end
 
 def part_2
-  $nil_locations_and_sizes.sort_by! { |a| a[1] }
+  final_file_locations_and_sizes = []
   $file_locations_and_sizes.reverse.each do |file|
-    # p $open_representation.map { |a| a.nil? ? "." : a }.join
-    # p $nil_locations_and_sizes.sort_by { |a| a[0] }
     file_size = file[1]
     location = nil
     nil_index = nil
-    $nil_locations_and_sizes.each_with_index do |nil_location, index|
+    nil_locations_and_sizes_local = $nil_locations_and_sizes.dup
+    nil_locations_and_sizes_local.each_with_index do |nil_location, index|
       if nil_location[1] >= file_size && nil_location[0] < file[0]
         location = nil_location[0]
         nil_index = index
@@ -70,27 +69,28 @@ def part_2
       end
     end
     if location
-      file_size.times do |i|
-        $open_representation[location + i] = file[2]
-        $open_representation[file[0] + i] = nil
-      end
-      $nil_locations_and_sizes[nil_index] = [$nil_locations_and_sizes[nil_index][0] + file_size, $nil_locations_and_sizes[nil_index][1] - file_size]
+      final_file_locations_and_sizes << [location, file_size, file[2]]
+      $nil_locations_and_sizes[nil_index] = [nil_locations_and_sizes_local[nil_index][0] + file_size, nil_locations_and_sizes_local[nil_index][1] - file_size]
+    else
+      final_file_locations_and_sizes << [file[0], file[1], file[2]]
     end
     $nil_locations_and_sizes.reject! { |a| a[0] > file[0] }
     $nil_locations_and_sizes.reject! { |a| a[1] <= 0 }
-    $nil_locations_and_sizes.sort_by! { |a| a[1] }
   end
-  checksum = 0
-  $open_representation.each_with_index do |num, index|
-    if num.nil?
-      checksum += 0
-    else
-      checksum += num*index
+
+
+  different_checksum = 0
+  final_file_locations_and_sizes.each do |file|
+    file_location_start = file[0]
+    file_size = file[1]
+    file_id = file[2]
+
+    for i in file_location_start..file_location_start+file_size-1
+      different_checksum += file_id*i
     end
   end
-  checksum
+  different_checksum
 end
 
 p "Part 1: #{part_1}"
-$open_representation = original_open_representation
 p "Part 2: #{part_2}"
