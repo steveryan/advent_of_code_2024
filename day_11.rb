@@ -35,9 +35,7 @@ def part2_recursive
   final_stones = 0
   $stones.each_with_index do |stone,i|
     stone_start = Time.now
-    p "starting stone #{i+1}/#{$stones.count}"
     final_stones += split(stone,75)
-    p "stone #{i+1}/#{$stones.count} Time for stone: #{Time.now-stone_start} Time so far: #{Time.now - start}"
   end
   p "Time: #{Time.now - start}"
   final_stones
@@ -67,5 +65,46 @@ def split(stone,times)
   end
 end
 
-p part2_recursive
+$bottom_up_cache = {}
+def part2_bottom_up
+  start = Time.now
+  75.times do |i|
+    1000.times do |j|
+      bottom_up_split(j,i)
+    end
+  end
+  p "cache built: #{Time.now - start}"
+  $stones = $original_stones
+  final_stones = 0
+  $stones.each do |stone|
+    final_stones += bottom_up_split(stone,75)
+  end
+  p "Finished: #{Time.now - start}"
+  final_stones
+end
 
+def bottom_up_split(stone,times)
+  key = "#{stone}_#{times}"
+  if $bottom_up_cache[key]
+    return $bottom_up_cache[key]
+  end
+  if times == 0
+    $bottom_up_cache[key] = 1
+  else
+    if stone == 0
+      $bottom_up_cache[key] = bottom_up_split(1,times-1)
+    elsif stone.to_s.chars.count.even?
+      chars = stone.to_s.chars
+      count = chars.count
+      first_value = chars[0...count/2].join.to_i
+      second_value = chars[count/2..-1].join.to_i
+      $bottom_up_cache[key] = bottom_up_split(first_value,times-1) + bottom_up_split(second_value,times-1)
+    else
+      $bottom_up_cache[key] = bottom_up_split(stone * 2024,times-1)
+    end
+    $bottom_up_cache[key]
+  end
+end
+
+p part2_recursive
+p part2_bottom_up 
