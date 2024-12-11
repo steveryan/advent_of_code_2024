@@ -4,7 +4,7 @@ $stones = data.first.split(" ").map(&:to_i)
 $original_stones = $stones
 
 def part1
-  75.times do |i|
+  25.times do |i|
     start = Time.now
     new_stones = []
     $stones.each do |stone|
@@ -29,36 +29,43 @@ def part1
   $stones.count
 end
 
-def part2
-  final_stones = []
+def part2_recursive
+  start = Time.now
   $stones = $original_stones
-  $stones.each do |curr|
-    stones = [curr]
-    37.times do |i|
-      new_stones = []
-      stones.each do |stone|
-        if stone == 0
-          new_stones << 1
-        elsif stone.to_s.chars.count.even?
-          chars = stone.to_s.chars
-          count = chars.count
-          new_stones << chars[0...count/2].join.to_i
-          new_stones << chars[count/2..-1].join.to_i
-        else
-          new_stones << stone * 2024
-        end
-      end
-      stones = new_stones
-    end
-    final_stones << stones
+  final_stones = 0
+  $stones.each_with_index do |stone,i|
+    stone_start = Time.now
+    p "starting stone #{i+1}/#{$stones.count}"
+    final_stones += split(stone,75)
+    p "stone #{i+1}/#{$stones.count} Time for stone: #{Time.now-stone_start} Time so far: #{Time.now - start}"
   end
-  final_stones.flatten.count
+  p "Time: #{Time.now - start}"
+  final_stones
 end
 
-start = Time.now
-p "Part 1: #{part1}"
-end_time = Time.now
-p "Time: #{end_time - start}"
-# p "Part 2: #{part2}"
-# part2_time = Time.now
-# p "Time: #{part2_time - end_time}"
+$cache = {}
+def split(stone,times)
+  key = "#{stone}_#{times}"
+  if $cache[key]
+    return $cache[key]
+  end
+  if times == 0
+    $cache[key] = 1
+  else
+    if stone == 0
+      $cache[key] = split(1,times-1)
+    elsif stone.to_s.chars.count.even?
+      chars = stone.to_s.chars
+      count = chars.count
+      first_value = chars[0...count/2].join.to_i
+      second_value = chars[count/2..-1].join.to_i
+      $cache[key] = split(first_value,times-1) + split(second_value,times-1)
+    else
+      $cache[key] = split(stone * 2024,times-1)
+    end
+    $cache[key]
+  end
+end
+
+p part2_recursive
+
