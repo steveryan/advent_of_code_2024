@@ -117,4 +117,7 @@ def part_2
 end
 
 p "Part 1: #{part_1}"
+start_time = Time.now
 p "Part 2: #{part_2}"
+end_time = Time.now
+p "Time: #{end_time - start_time}"
