@@ -26,6 +26,7 @@ $grid.each_with_index do |row, i|
 end
 
 def part_1
+  time = Time.now
   current_node = $start[0]
   current_direction = $start[1]
   $visited[current_node] = true
@@ -66,6 +67,7 @@ def part_1
   #     current_direction = v[1]
   #   end
   # end
+  p "Time: #{Time.now - time}"
   $distances[$target]
 end
 
@@ -146,12 +148,22 @@ end
 
 p "Part 1: #{part_1}"
 
+count_on_shortest_path = 0
+end_node = $target
+while $previous_nodes[end_node]
+  count_on_shortest_path += 1
+  end_node = $previous_nodes[end_node]
+end
+p "count on shortest path: #{count_on_shortest_path}"
+
 def part_2
+  time = Time.now
   alternate_path_ends = [$target]
   seen = Set.new
-  seen.add($target)
+  
   while alternate_path_ends.any?
     current_node = alternate_path_ends.shift
+    seen.add(current_node)
     while $previous_nodes[current_node]
 
       seen.add(current_node)
@@ -165,10 +177,23 @@ def part_2
         
         if $directions[checking] == $directions[current_node]
           if $distances[checking] - 1000 == $distances[$previous_nodes[current_node]]
+            p "found an alternate path going straight instead of turning"
+            p "checking: #{checking}"
+            p "instead of: #{$previous_nodes[current_node]}"
             alternate_path_ends << checking
           end
-        else
+        elsif $directions[checking] != $directions[current_node] && $directions[current_node] != $directions[$previous_nodes[current_node]]
+          if $distances[checking]  == $distances[$previous_nodes[current_node]]
+            p "found an alternate path where we both had to turn"
+            p "checking: #{checking}"
+            p "instead of: #{$previous_nodes[current_node]}"
+            alternate_path_ends << checking
+          end
+        elsif $directions[checking] != $directions[current_node] && $directions[current_node] == $directions[$previous_nodes[current_node]]
           if $distances[checking] + 1000 == $distances[$previous_nodes[current_node]]
+            p "found an alternate path turning instead of going straight"
+            p "checking: #{checking}"
+            p "instead of: #{$previous_nodes[current_node]}"
             alternate_path_ends << checking
           end
         end
@@ -178,20 +203,23 @@ def part_2
   end
 
 
-
-  # $grid.each_with_index do |row, i|
-  #   line = ""
-  #   row.each_with_index do |cell, j|
-  #     if $grid[i][j] == "#"
-  #       line += "#"
-  #     elsif seen.include?([i,j])
-  #       line += "O"
-  #     else
-  #       line += "."
-  #     end
-  #   end
-  #   p line
-  # end
+  count = 0
+  $grid.each_with_index do |row, i|
+    line = ""
+    row.each_with_index do |cell, j|
+      if $grid[i][j] == "#"
+        line += "-"
+      elsif seen.include?([i,j])
+        count += 1
+        line += "O"
+      else
+        line += "."
+      end
+    end
+    p line
+  end
+  p count
+  p "Time: #{Time.now - time}"
   seen.count
 end
 
