@@ -76,7 +76,7 @@ def explore_neighbors(current_node,current_direction)
   if neighbors.include?($previous_nodes[current_node])
     neighbors.delete($previous_nodes[current_node])
   end
-  min_distance = 10000
+  min_distance = 20000
   next_node = nil
   next_direction = nil
   neighbors.each do |neighbor|
@@ -171,6 +171,7 @@ def part_2
       to_check = get_neighbors(current_node)
       while to_check.any?
         checking = to_check.shift
+        next if seen.include?(checking)
         if checking == $previous_nodes[current_node]
           next
         end
@@ -183,14 +184,14 @@ def part_2
             alternate_path_ends << checking
           end
         elsif $directions[checking] != $directions[current_node] && $directions[current_node] != $directions[$previous_nodes[current_node]]
-          if $distances[checking]  == $distances[$previous_nodes[current_node]]
+          if $distances[checking] == $distances[$previous_nodes[current_node]]
             p "found an alternate path where we both had to turn"
             p "checking: #{checking}"
             p "instead of: #{$previous_nodes[current_node]}"
             alternate_path_ends << checking
           end
-        elsif $directions[checking] != $directions[current_node] && $directions[current_node] == $directions[$previous_nodes[current_node]]
-          if $distances[checking] + 1000 == $distances[$previous_nodes[current_node]]
+        else
+          if $distances[checking] - 1 <= $distances[$previous_nodes[current_node]]
             p "found an alternate path turning instead of going straight"
             p "checking: #{checking}"
             p "instead of: #{$previous_nodes[current_node]}"
