@@ -8,6 +8,7 @@ $distances_and_directions = {}
 $distances = {}
 $directions = {}
 $previous_nodes = {}
+$all_previous_nodes = {}
 $start = []
 $target = []
 
@@ -31,7 +32,8 @@ def part_1
   $distances_and_directions[[current_node,current_direction]] = [0, current_direction]
   $distances[current_node] = 0
   $directions[current_node] = current_direction
-  $previous_nodes[current_node] = nil
+  $previous_nodes[current_node] = true
+  $all_previous_nodes[current_node] = []
   while $unvisited.keys.any?
     $unvisited.delete(current_node)
     $visited[current_node] = true
@@ -100,8 +102,20 @@ def explore_neighbors(current_node,current_direction)
     if $distances[neighbor] && $distances[neighbor] < potential_distance
       next
     else
+      if $distances[neighbor] && $distances[neighbor] == potential_distance
+        if $all_previous_nodes[neighbor]
+          $all_previous_nodes[neighbor] << current_node
+        else
+          $all_previous_nodes[neighbor] = [current_node]
+        end
+      elsif $distances[neighbor] && $distances[neighbor] > potential_distance
+        $all_previous_nodes[neighbor] = [current_node]
+      elsif !$distances[neighbor]
+        $all_previous_nodes[neighbor] = [current_node]
+      end
       $distances[neighbor] = potential_distance
       $directions[neighbor] = direction
+      $directions[$previous_nodes[current_node]] = direction
       $previous_nodes[neighbor] = current_node
     end
     if potential_distance < min_distance
@@ -131,3 +145,55 @@ def get_neighbors(current_node)
 end
 
 p "Part 1: #{part_1}"
+
+def part_2
+  alternate_path_ends = [$target]
+  seen = Set.new
+  seen.add($target)
+  while alternate_path_ends.any?
+    current_node = alternate_path_ends.shift
+    while $previous_nodes[current_node]
+
+      seen.add(current_node)
+
+      to_check = get_neighbors(current_node)
+      while to_check.any?
+        checking = to_check.shift
+        if checking == $previous_nodes[current_node]
+          next
+        end
+        
+        if $directions[checking] == $directions[current_node]
+          if $distances[checking] - 1000 == $distances[$previous_nodes[current_node]]
+            alternate_path_ends << checking
+          end
+        else
+          if $distances[checking] + 1000 == $distances[$previous_nodes[current_node]]
+            alternate_path_ends << checking
+          end
+        end
+      end
+      current_node = $previous_nodes[current_node]
+    end
+  end
+
+
+
+  # $grid.each_with_index do |row, i|
+  #   line = ""
+  #   row.each_with_index do |cell, j|
+  #     if $grid[i][j] == "#"
+  #       line += "#"
+  #     elsif seen.include?([i,j])
+  #       line += "O"
+  #     else
+  #       line += "."
+  #     end
+  #   end
+  #   p line
+  # end
+  seen.count
+end
+
+
+p "Part 2: #{part_2}"
