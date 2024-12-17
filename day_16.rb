@@ -11,6 +11,7 @@ $previous_nodes = {}
 $all_previous_nodes = {}
 $start = []
 $target = []
+$final_directions = {}
 
 $grid.each_with_index do |row, i|
   row.each_with_index do |cell, j|
@@ -117,7 +118,7 @@ def explore_neighbors(current_node,current_direction)
       end
       $distances[neighbor] = potential_distance
       $directions[neighbor] = direction
-      $directions[$previous_nodes[current_node]] = direction
+      $final_directions[$previous_nodes[current_node]] = direction
       $previous_nodes[neighbor] = current_node
     end
     if potential_distance < min_distance
@@ -175,24 +176,17 @@ def part_2
         if checking == $previous_nodes[current_node]
           next
         end
-        
-        if $directions[checking] == $directions[current_node]
-          if $distances[checking] - 1000 == $distances[$previous_nodes[current_node]]
-            p "found an alternate path going straight instead of turning"
-            p "checking: #{checking}"
-            p "instead of: #{$previous_nodes[current_node]}"
-            alternate_path_ends << checking
-          end
-        elsif $directions[checking] != $directions[current_node] && $directions[current_node] != $directions[$previous_nodes[current_node]]
-          if $distances[checking] == $distances[$previous_nodes[current_node]]
-            p "found an alternate path where we both had to turn"
-            p "checking: #{checking}"
-            p "instead of: #{$previous_nodes[current_node]}"
-            alternate_path_ends << checking
+        p "checking: #{checking}"
+        if $directions[current_node]
+          if (($final_directions[current_node] == :up && checking[0] > current_node[0]) || ($final_directions[current_node] == :down && checking[0] < current_node[0]) || ($final_directions[current_node] == :left && checking[1] > current_node[1]) || ($final_directions[current_node] == :right && checking[1] < current_node[1]))
+            if $distances[checking] - 999 == $distances[current_node]
+              p "checking: #{checking}"
+              p "instead of: #{$previous_nodes[current_node]}"
+              alternate_path_ends << checking
+            end
           end
         else
-          if $distances[checking] - 1 <= $distances[$previous_nodes[current_node]]
-            p "found an alternate path turning instead of going straight"
+          if $distances[checking] + 1 == $distances[current_node]
             p "checking: #{checking}"
             p "instead of: #{$previous_nodes[current_node]}"
             alternate_path_ends << checking
@@ -209,12 +203,21 @@ def part_2
     line = ""
     row.each_with_index do |cell, j|
       if $grid[i][j] == "#"
-        line += "-"
+        line += "||||||||"
       elsif seen.include?([i,j])
         count += 1
-        line += "O"
+        sym = if $final_directions[[i,j]] == :right
+          ">"
+        elsif $final_directions[[i,j]] == :left
+          "<"
+        elsif $final_directions[[i,j]] == :up
+          "^"
+        else 
+          "v"
+        end
+        line += $distances[[i,j]].to_s.concat(sym).rjust(8, " ")
       else
-        line += "."
+        line += "(#{$distances[[i,j]]})".rjust(8, " ")
       end
     end
     p line
